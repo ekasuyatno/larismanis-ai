@@ -32,7 +32,7 @@ Mode lokal Vite akan tetap berjalan cepat dengan fallback generator lokal. Untuk
 
 ```bash
 OPENAI_API_KEY=sk-proj-isi_dengan_api_key_anda
-OPENAI_MODEL=gpt-5.1
+OPENAI_MODEL=gpt-4o-mini
 OPENAI_REASONING_EFFORT=low
 OPENAI_VERBOSITY=medium
 VITE_USE_REMOTE_AI=true
@@ -59,7 +59,7 @@ npm run build
 - Nama aplikasi: LarisManis AI
 - Tipe aplikasi: Web app
 - Fokus pengguna: UMKM Indonesia
-- Link aplikasi: isi setelah deploy Vercel
+- Link aplikasi: https://larismanisai.vercel.app
 - Repository: https://github.com/ekasuyatno/larismanis-ai
 
-Endpoint AI utama berada di `api/generate.js`. Jika API key belum tersedia, aplikasi otomatis memakai generator lokal dari `src/utils/generator.js` supaya demo tetap berjalan.
+Endpoint AI utama berada di `api/generate.js`. Jika model utama belum tersedia di akun, endpoint akan mencoba model cadangan `gpt-4o-mini`. Jika API key belum tersedia atau panggilan AI gagal, aplikasi otomatis memakai generator lokal dari `src/utils/generator.js` supaya demo tetap berjalan.

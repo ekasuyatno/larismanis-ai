@@ -29,7 +29,7 @@ Implementasi AI menggunakan endpoint serverless `api/generate.js` yang memanggil
 
 ## Link Aplikasi
 
-Isi dengan URL Vercel setelah deploy.
+https://larismanisai.vercel.app
 
 ## Repository
 

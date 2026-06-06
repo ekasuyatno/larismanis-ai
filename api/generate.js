@@ -58,6 +58,9 @@ const stringFields = [
   "customerQuestion",
 ];
 
+const DEFAULT_MODEL = "gpt-4o-mini";
+const FALLBACK_MODELS = ["gpt-4o-mini"];
+
 function sendJson(res, status, payload) {
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -170,6 +173,46 @@ function buildRequest(product) {
   return { instructions, input };
 }
 
+function getModelCandidates() {
+  const configuredModel = cleanString(process.env.OPENAI_MODEL, DEFAULT_MODEL);
+  return [configuredModel, ...FALLBACK_MODELS].filter(
+    (model, index, models) => model && models.indexOf(model) === index
+  );
+}
+
+function classifyAiError(error) {
+  if (error?.status === 401) return "api_key_invalid_or_revoked";
+  if (error?.status === 429) return "quota_or_rate_limit";
+  if (error?.status === 404) return "model_unavailable";
+  if (error?.status === 400) return "request_not_supported";
+  return "ai_request_failed";
+}
+
+async function createAiDraft(client, model, instructions, input, fallback) {
+  const request = {
+    model,
+    instructions,
+    input,
+    text: {
+      format: {
+        type: "json_schema",
+        name: "larismanis_sales_package",
+        strict: true,
+        schema: draftSchema,
+      },
+    },
+  };
+
+  if (model.startsWith("gpt-5")) {
+    request.reasoning = { effort: process.env.OPENAI_REASONING_EFFORT || "low" };
+    request.text.verbosity = process.env.OPENAI_VERBOSITY || "medium";
+  }
+
+  const response = await client.responses.create(request);
+  const rawDraft = JSON.parse(response.output_text || "{}");
+  return normalizeDraft(rawDraft, fallback);
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
@@ -190,42 +233,45 @@ export default async function handler(req, res) {
     const body = await readBody(req);
     const product = normalizeProduct(body.product);
     const fallback = generatePackage(product);
-    const model = process.env.OPENAI_MODEL || "gpt-5.1";
     const { instructions, input } = buildRequest(product);
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const attempts = [];
 
-    const request = {
-      model,
-      instructions,
-      input,
-      text: {
-        format: {
-          type: "json_schema",
-          name: "larismanis_sales_package",
-          strict: true,
-          schema: draftSchema,
-        },
-      },
-    };
-
-    if (model.startsWith("gpt-5")) {
-      request.reasoning = { effort: process.env.OPENAI_REASONING_EFFORT || "low" };
-      request.text.verbosity = process.env.OPENAI_VERBOSITY || "medium";
+    for (const model of getModelCandidates()) {
+      try {
+        const draft = await createAiDraft(client, model, instructions, input, fallback);
+        sendJson(res, 200, {
+          ok: true,
+          model,
+          draft,
+        });
+        return;
+      } catch (error) {
+        attempts.push({
+          model,
+          status: error?.status,
+          code: error?.code,
+          type: error?.type,
+          reason: classifyAiError(error),
+        });
+      }
     }
 
-    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    const response = await client.responses.create(request);
-    const rawDraft = JSON.parse(response.output_text || "{}");
-
+    console.error("Generate package failed", attempts);
+    const lastAttempt = attempts.at(-1) || {};
     sendJson(res, 200, {
-      ok: true,
-      model,
-      draft: normalizeDraft(rawDraft, fallback),
+      ok: false,
+      fallback: true,
+      reason: lastAttempt.reason || "ai_request_failed",
+      model: lastAttempt.model || null,
+      message: "AI belum berhasil membuat paket. Generator lokal akan dipakai.",
     });
   } catch (error) {
     console.error("Generate package failed", error);
     sendJson(res, 200, {
       ok: false,
       fallback: true,
+      reason: classifyAiError(error),
       message: "AI belum berhasil membuat paket. Generator lokal akan dipakai.",
     });
   }
