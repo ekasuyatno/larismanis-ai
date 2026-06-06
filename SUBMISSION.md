@@ -35,6 +35,14 @@ https://larismanisai.vercel.app
 
 https://github.com/ekasuyatno/larismanis-ai
 
+## Project Brief
+
+https://github.com/ekasuyatno/larismanis-ai/blob/main/PROJECT_BRIEF.md
+
+## Komentar Submission
+
+LarisManis AI adalah asisten kerja berbasis Generative AI untuk membantu UMKM Indonesia menyiapkan paket jualan digital dari data produk sederhana. Aplikasi menghasilkan deskripsi marketplace, caption Instagram, pesan WhatsApp, balasan chat pelanggan, judul produk, kata kunci, spesifikasi singkat, kalender konten 7 hari, serta simulasi margin dan rekomendasi harga. Aplikasi sudah live di Vercel dan endpoint AI production sudah diuji berhasil menghasilkan draft dari OpenAI Responses API.
+
 ## Checklist Sebelum Submit
 
 - `npm run build` berhasil tanpa error.
@@ -42,3 +50,4 @@ https://github.com/ekasuyatno/larismanis-ai
 - Tombol Generate Paket berhasil memakai endpoint `api/generate.js`.
 - Environment variable `OPENAI_API_KEY` tersimpan di Vercel, bukan di source code.
 - Link aplikasi dan repository sudah diisi pada dokumen ini.
+- Project brief sudah tersedia untuk komentar submission.

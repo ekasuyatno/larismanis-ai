@@ -61,5 +61,6 @@ npm run build
 - Fokus pengguna: UMKM Indonesia
 - Link aplikasi: https://larismanisai.vercel.app
 - Repository: https://github.com/ekasuyatno/larismanis-ai
+- Project brief: https://github.com/ekasuyatno/larismanis-ai/blob/main/PROJECT_BRIEF.md
 
 Endpoint AI utama berada di `api/generate.js`. Jika model utama belum tersedia di akun, endpoint akan mencoba model cadangan `gpt-4o-mini`. Jika API key belum tersedia atau panggilan AI gagal, aplikasi otomatis memakai generator lokal dari `src/utils/generator.js` supaya demo tetap berjalan.
